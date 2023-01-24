@@ -1,18 +1,30 @@
-import React from 'react'
+import React, { useState } from 'react'
 
 // Suggested initial states
 const initialMessage = ''
 const initialEmail = ''
 const initialSteps = 0
 const initialIndex = 4 // the index the "B" is at
+const initialX = 2
+const initialY = 2
+
 
 export default function AppFunctional(props) {
+
+  const [x, setX ] = useState(initialX);
+  const [y, setY ] = useState(initialY);
+  const [steps, setSteps] = useState(initialSteps)
+  const [index, setIndex] = useState(initialIndex)
+  
+  
+  
+
   // THE FOLLOWING HELPERS ARE JUST RECOMMENDATIONS.
   // You can delete them and build your own logic from scratch.
 
   function getXY() {
-    // It it not necessary to have a state to track the coordinates.
-    // It's enough to know what index the "B" is at, to be able to calculate them.
+    return (`${x},${y}`)
+   
   }
 
   function getXYMessage() {
@@ -22,10 +34,45 @@ export default function AppFunctional(props) {
   }
 
   function reset() {
-    // Use this helper to reset all states to their initial values.
+    setX(initialX);
+    setY(initialY);
+    setSteps(initialSteps);
+    setIndex(initialIndex)
   }
 
   function getNextIndex(direction) {
+    if(direction === 'up'){
+      if((y-1) < 0){
+        return index
+      }
+      setY(y-1)
+      setIndex(index-3)
+      setSteps(steps +1)
+    }
+    if(direction === 'down'){
+      if((y+1) > 3){
+        return index
+      }
+      setY(y+1)
+      setIndex(index+3)
+      setSteps(steps +1)
+    }
+    if(direction === 'left'){
+      if((x-1) < 1){
+        return index
+      }
+      setX(x-1)
+      setIndex(index-1)
+      setSteps(steps +1)
+    }
+    if(direction === 'right'){
+      if((x+1) > 3){
+        return index
+      }
+      setX(x+1)
+      setIndex(index+1)
+      setSteps(steps +1)
+    }
     // This helper takes a direction ("left", "up", etc) and calculates what the next index
     // of the "B" would be. If the move is impossible because we are at the edge of the grid,
     // this helper should return the current index unchanged.
@@ -47,14 +94,14 @@ export default function AppFunctional(props) {
   return (
     <div id="wrapper" className={props.className}>
       <div className="info">
-        <h3 id="coordinates">Coordinates (2, 2)</h3>
-        <h3 id="steps">You moved 0 times</h3>
+        <h3 id="coordinates">Coordinates ({x}, {y})</h3>
+        <h3 id="steps">You moved {steps} times</h3>
       </div>
       <div id="grid">
         {
           [0, 1, 2, 3, 4, 5, 6, 7, 8].map(idx => (
-            <div key={idx} className={`square${idx === 4 ? ' active' : ''}`}>
-              {idx === 4 ? 'B' : null}
+            <div key={idx} className={`square${idx === index ? ' active' : ''}`}>
+              {idx === index ? 'B' : null}
             </div>
           ))
         }
@@ -63,11 +110,11 @@ export default function AppFunctional(props) {
         <h3 id="message"></h3>
       </div>
       <div id="keypad">
-        <button id="left">LEFT</button>
-        <button id="up">UP</button>
-        <button id="right">RIGHT</button>
-        <button id="down">DOWN</button>
-        <button id="reset">reset</button>
+        <button id="left" onClick={(e) => getNextIndex(e.target.id)}>LEFT</button>
+        <button id="up" onClick={(e) => getNextIndex(e.target.id)}>UP</button>
+        <button id="right" onClick={(e) => getNextIndex(e.target.id)}>RIGHT</button>
+        <button id="down" onClick={(e) => getNextIndex(e.target.id)}>DOWN</button>
+        <button id="reset" onClick={(e) => reset()}>reset</button>
       </div>
       <form>
         <input id="email" type="email" placeholder="type email"></input>
