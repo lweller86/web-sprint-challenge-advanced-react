@@ -5,10 +5,10 @@ import * as yup from 'yup'
 
 const schema = yup.object().shape({
   email: yup
-  .string()
-  .email('Ouch: email must be a valid email')
-  .required('Ouch: email is required')
-  .notOneOf(['foo@bar.baz'], 'foo@bar.baz failure #71' )
+    .string()
+    .email('Ouch: email must be a valid email')
+    .required('Ouch: email is required')
+    .notOneOf(['foo@bar.baz'], 'foo@bar.baz failure #71')
 })
 
 // Suggested initial states
@@ -30,9 +30,9 @@ const initialState = {
 
 
 export default class AppClass extends React.Component {
-  constructor(){
+  constructor() {
     super()
-    this.state={
+    this.state = {
       x: initialX,
       y: initialY,
       steps: initialSteps,
@@ -43,8 +43,7 @@ export default class AppClass extends React.Component {
   }
 
   getXY = () => {
-
-
+    return (`${this.state.x},${this.state.y}`)
   }
 
   getXYMessage = () => {
@@ -62,51 +61,78 @@ export default class AppClass extends React.Component {
   }
 
   getNextIndex = (direction) => {
-    if(direction === 'up'){
-      if((this.state.y-1) < 0){
-        return index
+    if (direction === 'up') {
+      if ((this.state.y - 1) === 0) {
+        return ({ x: this.state.x, y: this.state.y, index: this.state.index })
       }
-      setY(y-1)
-      setIndex(index-3)
-      setSteps(steps +1)
+      return ({
+        x: this.state.x,
+        y: this.state.y - 1,
+        index: this.state.index - 3,
+        steps: this.state.steps + 1,
+      })
     }
-    if(direction === 'down'){
-      if((y+1) > 3){
-        return index
+
+    if (direction === 'down') {
+      if ((this.state.y + 1) === 4) {
+        return ({ x: this.state.x, y: this.state.y, index: this.state.index  })
       }
-      setY(y+1)
-      setIndex(index+3)
-      setSteps(steps +1)
+      return ({
+        x: this.state.x,
+        y: this.state.y + 1,
+        index: this.state.index + 3,
+        steps: this.state.steps + 1,
+
+      })
     }
-    if(direction === 'left'){
-      if((x-1) < 1){
-        return index
+
+    if (direction === 'left') {
+      if ((this.state.x - 1) === 0 ) {
+        return ({ x: this.state.x, y: this.state.y, index: this.state.index  })
       }
-      setX(x-1)
-      setIndex(index-1)
-      setSteps(steps +1)
+      return ({
+        x: this.state.x - 1,
+        y: this.state.y,
+        index: this.state.index - 1,
+        steps: this.state.steps + 1,
+
+      })
     }
-    if(direction === 'right'){
-      if((x+1) > 3){
-        return index
+    if (direction === 'right') {
+      if (this.state.x + 1 === 4) {
+        return ({ x: this.state.x, y: this.state.y, index: this.state.index  })
       }
-      setX(x+1)
-      setIndex(index+1)
-      setSteps(steps +1)
+      return ({
+        x: this.state.x + 1,
+        y: this.state.y,
+        index: this.state.index + 1,
+        steps: this.state.steps + 1,
+
+      })
     }
   }
 
   move = (evt) => {
-    // This event handler can use the helper above to obtain a new index for the "B",
-    // and change any states accordingly.
+    let nextMove = this.getNextIndex(evt.target.id)
+    if ((`${nextMove.x},${nextMove.y}`) === this.state.index) {
+      return this.setState({ message: `You can't go ${evt.target.id}` })
+    }
+    this.setState({
+      ...this.state,
+      message: initialMessage,
+      x: nextMove.x,
+      y: nextMove.y,
+      steps: nextMove.steps,
+      index: nextMove.index,
+    })
   }
 
   onChange = (evt) => {
     console.log(evt.target.value)
-   this.setState({
-    ...this.state,
-    email:evt.target.value
-   });
+    this.setState({
+      ...this.state,
+      email: evt.target.value
+    });
 
   }
 
@@ -120,14 +146,14 @@ export default class AppClass extends React.Component {
     return (
       <div id="wrapper" className={className}>
         <div className="info">
-          <h3 id="coordinates">Coordinates (2, 2)</h3>
-          <h3 id="steps">You moved  times</h3>
+          <h3 id="coordinates">Coordinates ({this.state.x},{this.state.y})</h3>
+          <h3 id="steps">You moved {this.steps} times</h3>
         </div>
         <div id="grid">
           {
             [0, 1, 2, 3, 4, 5, 6, 7, 8].map(idx => (
-              <div key={idx} className={`square${idx === 4 ? ' active' : ''}`}>
-                {idx === 4 ? 'B' : null}
+              <div key={idx} className={`square${idx === this.state.index ? ' active' : ''}`}>
+                {idx === this.state.index ? 'B' : null}
               </div>
             ))
           }
@@ -136,10 +162,10 @@ export default class AppClass extends React.Component {
           <h3 id="message"></h3>
         </div>
         <div id="keypad">
-          <button id="left" onClick={(e) => this.move.e} >LEFT</button>
-          <button id="up" onClick={(e) => this.move.e} >UP</button>
-          <button id="right" onClick={(e) => this.move.e} >RIGHT</button>
-          <button id="down" onClick={(e) => this.move.e} >DOWN</button>
+          <button id="left" onClick={(e) => this.move(e)} >LEFT</button>
+          <button id="up" onClick={(e) => this.move(e)} >UP</button>
+          <button id="right" onClick={(e) => this.move(e)} >RIGHT</button>
+          <button id="down" onClick={(e) => this.move(e)} >DOWN</button>
           <button id="reset" onClick={(e) => this.reset()} >reset</button>
         </div>
         <form>
