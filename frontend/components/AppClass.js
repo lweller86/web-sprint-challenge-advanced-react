@@ -1,12 +1,24 @@
 import axios from 'axios'
 import e from 'cors'
 import React from 'react'
+import * as yup from 'yup'
+
+const schema = yup.object().shape({
+  email: yup
+  .string()
+  .email('Ouch: email must be a valid email')
+  .required('Ouch: email is required')
+  .notOneOf(['foo@bar.baz'], 'foo@bar.baz failure #71' )
+})
 
 // Suggested initial states
 const initialMessage = ''
 const initialEmail = ''
 const initialSteps = 0
 const initialIndex = 4 // the index the "B" is at
+const initialX = 2
+const initialY = 2
+const URL = 'http://localhost:9000/api/result'
 
 
 const initialState = {
@@ -18,8 +30,17 @@ const initialState = {
 
 
 export default class AppClass extends React.Component {
-  // THE FOLLOWING HELPERS ARE JUST RECOMMENDATIONS.
-  // You can delete them and build your own logic from scratch.
+  constructor(){
+    super()
+    this.state={
+      x: initialX,
+      y: initialY,
+      steps: initialSteps,
+      index: initialIndex,
+      message: initialMessage,
+      email: '',
+    }
+  }
 
   getXY = () => {
 
@@ -33,13 +54,46 @@ export default class AppClass extends React.Component {
   }
 
   reset = () => {
-    // Use this helper to reset all states to their initial values.
+    setX(initialX);
+    setY(initialY);
+    setSteps(initialSteps);
+    setIndex(initialIndex);
+    setEmail(initialEmail);
   }
 
   getNextIndex = (direction) => {
-    // This helper takes a direction ("left", "up", etc) and calculates what the next index
-    // of the "B" would be. If the move is impossible because we are at the edge of the grid,
-    // this helper should return the current index unchanged.
+    if(direction === 'up'){
+      if((this.state.y-1) < 0){
+        return index
+      }
+      setY(y-1)
+      setIndex(index-3)
+      setSteps(steps +1)
+    }
+    if(direction === 'down'){
+      if((y+1) > 3){
+        return index
+      }
+      setY(y+1)
+      setIndex(index+3)
+      setSteps(steps +1)
+    }
+    if(direction === 'left'){
+      if((x-1) < 1){
+        return index
+      }
+      setX(x-1)
+      setIndex(index-1)
+      setSteps(steps +1)
+    }
+    if(direction === 'right'){
+      if((x+1) > 3){
+        return index
+      }
+      setX(x+1)
+      setIndex(index+1)
+      setSteps(steps +1)
+    }
   }
 
   move = (evt) => {
@@ -82,11 +136,11 @@ export default class AppClass extends React.Component {
           <h3 id="message"></h3>
         </div>
         <div id="keypad">
-          <button id="left">LEFT</button>
-          <button id="up">UP</button>
-          <button id="right">RIGHT</button>
-          <button id="down">DOWN</button>
-          <button id="reset">reset</button>
+          <button id="left" onClick={(e) => this.move.e} >LEFT</button>
+          <button id="up" onClick={(e) => this.move.e} >UP</button>
+          <button id="right" onClick={(e) => this.move.e} >RIGHT</button>
+          <button id="down" onClick={(e) => this.move.e} >DOWN</button>
+          <button id="reset" onClick={(e) => this.reset()} >reset</button>
         </div>
         <form>
           <input id="email" type="email" onChange={this.handleChange} placeholder="type email"></input>

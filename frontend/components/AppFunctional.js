@@ -1,4 +1,15 @@
+import axios from 'axios'
 import React, { useState } from 'react'
+import * as yup from 'yup'
+
+
+const schema = yup.object().shape({
+  email: yup
+  .string()
+  .email('Ouch: email must be a valid email')
+  .required('Ouch: email is required')
+  .notOneOf(['foo@bar.baz'], 'foo@bar.baz failure #71' )
+})
 
 // Suggested initial states
 const initialMessage = ''
@@ -7,16 +18,23 @@ const initialSteps = 0
 const initialIndex = 4 // the index the "B" is at
 const initialX = 2
 const initialY = 2
+const URL = 'http://localhost:9000/api/result'
 
 
 export default function AppFunctional(props) {
 
   const [x, setX ] = useState(initialX);
   const [y, setY ] = useState(initialY);
-  const [steps, setSteps] = useState(initialSteps)
-  const [index, setIndex] = useState(initialIndex)
-  
-  
+  const [steps, setSteps] = useState(initialSteps);
+  const [index, setIndex] = useState(initialIndex);
+  const [email, setEmail] = useState(initialEmail);
+  const [message, setMessage] = useState(initialMessage);
+  const validate = (name, value) => {
+    yup.reach(schema, name)
+      .validate(value)
+      .then(() => post())
+      .catch(err => alert(err.errors[0]))
+  }
   
 
   // THE FOLLOWING HELPERS ARE JUST RECOMMENDATIONS.
@@ -37,7 +55,8 @@ export default function AppFunctional(props) {
     setX(initialX);
     setY(initialY);
     setSteps(initialSteps);
-    setIndex(initialIndex)
+    setIndex(initialIndex);
+    setEmail(initialEmail);
   }
 
   function getNextIndex(direction) {
@@ -84,12 +103,30 @@ export default function AppFunctional(props) {
   }
 
   function onChange(evt) {
-    // You will need this to update the value of the input.
+    
+   setEmail(evt)
   }
 
   function onSubmit(evt) {
-    // Use a POST request to send a payload to the server.
+    evt.preventDefault()
+    validate('email', email)
+    
+    
+   
   }
+
+  function post () {
+    const dataSet = {
+      "x": x,
+      "y": y,
+      "steps": steps,
+      "email": email
+    }
+   
+    axios.post(URL, dataSet)
+    .then(({data}) => {setMessage(data.message)})
+    .finally(reset())
+  } 
 
   return (
     <div id="wrapper" className={props.className}>
@@ -107,7 +144,7 @@ export default function AppFunctional(props) {
         }
       </div>
       <div className="info">
-        <h3 id="message"></h3>
+        <h3 id="message">{message}</h3>
       </div>
       <div id="keypad">
         <button id="left" onClick={(e) => getNextIndex(e.target.id)}>LEFT</button>
@@ -116,8 +153,8 @@ export default function AppFunctional(props) {
         <button id="down" onClick={(e) => getNextIndex(e.target.id)}>DOWN</button>
         <button id="reset" onClick={(e) => reset()}>reset</button>
       </div>
-      <form>
-        <input id="email" type="email" placeholder="type email"></input>
+      <form onSubmit={(e) => onSubmit(e)} >
+        <input id="email" type="email" value={email} onChange={(e) => onChange(e.target.value)} placeholder="type email"></input>
         <input id="submit" type="submit"></input>
       </form>
     </div>
