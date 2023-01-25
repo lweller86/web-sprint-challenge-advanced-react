@@ -33,7 +33,7 @@ export default function AppFunctional(props) {
     yup.reach(schema, name)
       .validate(value)
       .then(() => post())
-      .catch(err => alert(err.errors[0]))
+      .catch(err => setMessage(err.errors[0]))
   }
   
 
@@ -57,11 +57,14 @@ export default function AppFunctional(props) {
     setSteps(initialSteps);
     setIndex(initialIndex);
     setEmail(initialEmail);
+    setMessage(initialMessage);
   }
 
   function getNextIndex(direction) {
     if(direction === 'up'){
-      if((y-1) < 0){
+      if((y-1) === 0){
+        setMessage("You can't go up")
+       
         return index
       }
       setY(y-1)
@@ -70,6 +73,8 @@ export default function AppFunctional(props) {
     }
     if(direction === 'down'){
       if((y+1) > 3){
+        setMessage("You can't go down")
+       
         return index
       }
       setY(y+1)
@@ -78,6 +83,8 @@ export default function AppFunctional(props) {
     }
     if(direction === 'left'){
       if((x-1) < 1){
+        setMessage("You can't go left")
+       
         return index
       }
       setX(x-1)
@@ -86,15 +93,15 @@ export default function AppFunctional(props) {
     }
     if(direction === 'right'){
       if((x+1) > 3){
+        setMessage("You can't go right")
+       
         return index
       }
       setX(x+1)
       setIndex(index+1)
       setSteps(steps +1)
     }
-    // This helper takes a direction ("left", "up", etc) and calculates what the next index
-    // of the "B" would be. If the move is impossible because we are at the edge of the grid,
-    // this helper should return the current index unchanged.
+
   }
 
   function move(evt) {
@@ -125,14 +132,14 @@ export default function AppFunctional(props) {
    
     axios.post(URL, dataSet)
     .then(({data}) => {setMessage(data.message)})
-    .finally(reset())
+    .finally(setEmail(initialEmail))
   } 
 
   return (
     <div id="wrapper" className={props.className}>
       <div className="info">
         <h3 id="coordinates">Coordinates ({x}, {y})</h3>
-        <h3 id="steps">You moved {steps} times</h3>
+        <h3 id="steps">{steps === 1  ? `You moved ${steps} time` : `You moved ${steps} times` }</h3>
       </div>
       <div id="grid">
         {

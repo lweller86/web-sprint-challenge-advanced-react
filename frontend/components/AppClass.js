@@ -1,10 +1,9 @@
 import axios from 'axios'
-import e from 'cors'
 import React from 'react'
 import * as yup from 'yup'
 
 const schema = yup.object().shape({
-  email: yup
+  formValue: yup
     .string()
     .email('Ouch: email must be a valid email')
     .required('Ouch: email is required')
@@ -38,7 +37,7 @@ export default class AppClass extends React.Component {
       steps: initialSteps,
       index: initialIndex,
       message: initialMessage,
-      email: '',
+      formValues: '',
     }
   }
 
@@ -53,16 +52,20 @@ export default class AppClass extends React.Component {
   }
 
   reset = () => {
-    setX(initialX);
-    setY(initialY);
-    setSteps(initialSteps);
-    setIndex(initialIndex);
-    setEmail(initialEmail);
+    this.setState({
+    x: initialX,
+    y: initialY,
+    steps: initialSteps,
+    index: initialIndex,
+    message: initialMessage,
+    formValues: ''
+  })
   }
 
   getNextIndex = (direction) => {
     if (direction === 'up') {
       if ((this.state.y - 1) === 0) {
+        
         return ({ x: this.state.x, y: this.state.y, index: this.state.index })
       }
       return ({
@@ -75,6 +78,7 @@ export default class AppClass extends React.Component {
 
     if (direction === 'down') {
       if ((this.state.y + 1) === 4) {
+        
         return ({ x: this.state.x, y: this.state.y, index: this.state.index  })
       }
       return ({
@@ -88,6 +92,7 @@ export default class AppClass extends React.Component {
 
     if (direction === 'left') {
       if ((this.state.x - 1) === 0 ) {
+        
         return ({ x: this.state.x, y: this.state.y, index: this.state.index  })
       }
       return ({
@@ -100,6 +105,7 @@ export default class AppClass extends React.Component {
     }
     if (direction === 'right') {
       if (this.state.x + 1 === 4) {
+      
         return ({ x: this.state.x, y: this.state.y, index: this.state.index  })
       }
       return ({
@@ -114,7 +120,7 @@ export default class AppClass extends React.Component {
 
   move = (evt) => {
     let nextMove = this.getNextIndex(evt.target.id)
-    if ((`${nextMove.x},${nextMove.y}`) === this.state.index) {
+    if ((nextMove.index) === this.state.index) {
       return this.setState({ message: `You can't go ${evt.target.id}` })
     }
     this.setState({
@@ -128,26 +134,39 @@ export default class AppClass extends React.Component {
   }
 
   onChange = (evt) => {
-    console.log(evt.target.value)
-    this.setState({
-      ...this.state,
-      email: evt.target.value
-    });
-
+    this.setState({formValues: evt.target.value})
   }
 
-  onSubmit = (e) => {
-    e.preventDefault();
-    this.props.onChange
+  validate = (name,value) => {
+    yup.reach(schema, name)
+      .validate(value)
+      .then(() => this.post())
+      .catch(err => this.setState({message: err.errors}))
   }
 
+  post = () => {
+    const toSend = {
+      "x": this.state.x,
+      "y": this.state.y,
+      "steps": this.state.steps,
+      "email": this.state.formValues
+    }
+    axios.post('http://localhost:9000/api/result', toSend)
+      .then(({data}) => {this.setState({message: data.message})})
+      .finally(this.setState({formValues: ''}))
+  }
+
+  onSubmit = (evt) => {
+    evt.preventDefault()
+    this.validate('formValue', this.state.formValues)
+  }
   render() {
     const { className } = this.props
     return (
       <div id="wrapper" className={className}>
         <div className="info">
           <h3 id="coordinates">Coordinates ({this.state.x},{this.state.y})</h3>
-          <h3 id="steps">You moved {this.steps} times</h3>
+          <h3 id="steps">{this.state.steps === 1  ? `You moved ${this.state.steps} time` : `You moved ${this.state.steps} times` }</h3>
         </div>
         <div id="grid">
           {
@@ -159,7 +178,7 @@ export default class AppClass extends React.Component {
           }
         </div>
         <div className="info">
-          <h3 id="message"></h3>
+          <h3 id="message">{this.state.message}</h3>
         </div>
         <div id="keypad">
           <button id="left" onClick={(e) => this.move(e)} >LEFT</button>
@@ -168,9 +187,9 @@ export default class AppClass extends React.Component {
           <button id="down" onClick={(e) => this.move(e)} >DOWN</button>
           <button id="reset" onClick={(e) => this.reset()} >reset</button>
         </div>
-        <form>
-          <input id="email" type="email" onChange={this.handleChange} placeholder="type email"></input>
-          <input onSubmit={this.onSubmit} id="submit" type="submit"></input>
+        <form onSubmit={(e) => this.onSubmit(e)} >
+          <input id="email" type="email" value={this.state.formValues} onChange={(e) => this.onChange(e)} placeholder="type email"></input>
+          <input  id="submit" type="submit"></input>
         </form>
       </div>
     )
